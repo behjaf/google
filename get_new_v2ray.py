@@ -183,7 +183,7 @@ def get_base_url():
     exit()
 
 
-# Main script execution behrouz
+# Main script execution
 if __name__ == "__main__":
     api_url = get_base_url()
     file_path = "/sys/devices/platform/soc/78b5000.spi/spi_master/spi0/spi0.0/mtd/mtd0/mtd0/nvmem"
