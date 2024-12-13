@@ -92,7 +92,7 @@ response = requests.post(TOKEN_URL, data={"username": serial_number, "password":
 if response.status_code == 200:
     token = response.json()["access"]
     print("Token obtained successfully!")
-    print(f"Token: {token}")
+    # print(f"Token: {token}")
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -105,10 +105,10 @@ if response.status_code == 200:
 
     if device_response.status_code == 200:
         device_data = device_response.json()
-        print(f"Device response data: {device_data}")
+        # print(f"Device response data: {device_data}")
         if device_data:  # Check if there's any device data in the response
             device_id = device_data[0]["id"]  # Get the ID of the first matching device
-            print(f"Device ID obtained: {device_id}")
+            # print(f"Device ID obtained: {device_id}")
 
             # Prepare payload for Device_Online
             payload = {
@@ -116,7 +116,7 @@ if response.status_code == 200:
                 "mlb_serial_number": mlb_serial_number,
                 "device": device_id,  # Use the primary key (ID)
             }
-            print(f"Sending Payload: {payload}")
+            # print(f"Sending Payload: {payload}")
 
             # Post to Device_Online
             online_response = requests.post(DEVICE_ONLINE_URL, headers=headers, data=json.dumps(payload))
