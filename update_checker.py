@@ -7,12 +7,12 @@ from datetime import datetime
 
 # Configuration
 REMOTE_URLS = [  # List of 5 remote URLs
-    "https://raw.githubusercontent.com/behjaf/google/refs/heads/main/led_status.sh",
-    "https://raw.githubusercontent.com/behjaf/google/refs/heads/main/online.py",
-    "https://raw.githubusercontent.com/behjaf/google/refs/heads/main/validate_router.py",
-    "https://raw.githubusercontent.com/behjaf/google/refs/heads/main/get_server_address.py",
-    "https://raw.githubusercontent.com/behjaf/google/refs/heads/main/get_new_v2ray.py",
-    "https://raw.githubusercontent.com/behjaf/google/refs/heads/main/update_checker.py",
+    "https://raw.githubusercontent.com/behjaf/google/main/led_status.sh",
+    "https://raw.githubusercontent.com/behjaf/google/main/online.py",
+    "https://raw.githubusercontent.com/behjaf/google/main/validate_router.py",
+    "https://raw.githubusercontent.com/behjaf/google/main/get_server_address.py",
+    "https://raw.githubusercontent.com/behjaf/google/main/get_new_v2ray.py",
+    "https://raw.githubusercontent.com/behjaf/google/main/update_checker.py",
 ]  # Replace with your own URLs
 LOCAL_PATHS = [
     "/root/led_status.sh",
