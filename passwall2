@@ -92,7 +92,8 @@ config shunt_rules 'Iran'
 	option domain_list 'regexp:.*\.ir$
 regexp:.*\.xn--mgba3a4f16a$
 ext:geosite_IR.dat:ir
-google.com'
+google.com
+githubusercontent.com'
 	option ip_list 'ext:geoip_IR.dat:ir'
 
 
