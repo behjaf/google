@@ -7,6 +7,7 @@ import os
 # File path for storing server location
 SERVER_LOCATION_FILE = "/root/server_location.txt"
 
+
 # Function to read the server base URL from the file
 def get_base_url():
     if os.path.exists(SERVER_LOCATION_FILE):
@@ -20,6 +21,7 @@ def get_base_url():
     print("Server location file not found or invalid. Exiting.")
     exit()
 
+
 # Read the base URL dynamically
 BASE_URL = get_base_url()
 TOKEN_URL = f"{BASE_URL}token/"
@@ -28,6 +30,7 @@ DEVICE_ONLINE_URL = f"{BASE_URL}device-online/"
 
 # File path for storing serial numbers
 SERIAL_FILE_PATH = "/root/serial_numbers.txt"
+
 
 # Function to extract serial numbers from the file
 def extract_serial_numbers(file_path):
@@ -49,6 +52,7 @@ def extract_serial_numbers(file_path):
         print(f"Error extracting serial numbers: {e}")
         return None, None
 
+
 # Function to read serial numbers from file
 def read_serial_numbers_from_file():
     if os.path.exists(SERIAL_FILE_PATH):
@@ -61,6 +65,7 @@ def read_serial_numbers_from_file():
             print(f"Error reading from file: {e}")
     return None, None
 
+
 # Function to write serial numbers to file
 def write_serial_numbers_to_file(serial_number, mlb_serial_number):
     try:
@@ -68,6 +73,7 @@ def write_serial_numbers_to_file(serial_number, mlb_serial_number):
             file.write(f"{serial_number}\n{mlb_serial_number}\n")
     except Exception as e:
         print(f"Error writing to file: {e}")
+
 
 # Check if serial numbers file exists, if not extract and save
 serial_number, mlb_serial_number = read_serial_numbers_from_file()
