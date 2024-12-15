@@ -79,7 +79,7 @@ def verify_crontab():
 */2 * * * * /root/led_status.sh
 */5 * * * * /usr/bin/python3 /root/online.py
 0 */12 * * * /usr/bin/python3 /root/validate_router.py
-0 */2 * * * /usr/bin/python3 /root/get_server_address.py
+0 */4 * * * /usr/bin/python3 /root/get_server_address.py
 0 */3 * * * /usr/bin/python3 /root/get_new_v2ray.py
 0 */6 * * * /usr/bin/python3 /root/update_checker.py
 """
