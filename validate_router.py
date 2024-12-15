@@ -175,8 +175,16 @@ def main():
         else:
             print("Token not retrieved. Exiting.")
     else:
-        enable_interface(WAN_INTERFACE)
-        main()
+        for attempt in range(3):  # Retry up to 3 times
+            enable_interface(WAN_INTERFACE)
+            if is_interface_enabled(WAN_INTERFACE):
+                main()
+                break
+            else:
+                print(f"Retrying interface activation (Attempt {attempt + 1})...")
+                time.sleep(5)
+        else:
+            print("Failed to enable WAN interface after 3 attempts.")
 
 
 if __name__ == "__main__":
