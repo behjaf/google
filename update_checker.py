@@ -115,7 +115,7 @@ if __name__ == "__main__":
             if local_hash != remote_hash:
                 print(f"Update detected for {local_path}. Updating local file...")
                 update_local_file(local_path, remote_content)
-        time.sleep(2)
+        time.sleep(1)
 
     server_location_path = "/root/server_location.txt"
     if not os.path.exists(server_location_path):
