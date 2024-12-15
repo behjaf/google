@@ -3,9 +3,24 @@ import json
 import subprocess
 import re
 import os
+import time
 
 # File path for storing server location
 SERVER_LOCATION_FILE = "/root/server_location.txt"
+
+
+# Retry logic
+
+def retry_request(func, max_retries=3, delay=10):
+    for attempt in range(max_retries):
+        response = func()
+        if response.status_code == 200 or response.status_code == 201:
+            return response
+        else:
+            print(f"Retry {attempt + 1}/{max_retries} failed. Retrying in {delay} seconds...")
+            time.sleep(delay)
+    print("Max retries reached. Exiting.")
+    exit()
 
 
 # Function to read the server base URL from the file
@@ -92,51 +107,49 @@ if not mlb_serial_number or not serial_number:
         print("Failed to extract serial numbers.")
         exit()
 
+
 # Get token each time the script runs
-response = requests.post(TOKEN_URL, data={"username": serial_number, "password": mlb_serial_number})
+def get_token():
+    return requests.post(TOKEN_URL, data={"username": serial_number, "password": mlb_serial_number})
 
-if response.status_code == 200:
-    token = response.json()["access"]
-    print("Token obtained successfully!")
-    # print(f"Token: {token}")
 
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
+response = retry_request(get_token)
+
+token = response.json()["access"]
+print("Token obtained successfully!")
+
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Content-Type": "application/json",
+}
+
+
+# Fetch device ID using serial_number
+def fetch_device():
+    return requests.get(DEVICE_URL, headers=headers, params={"serial_number": serial_number})
+
+
+device_response = retry_request(fetch_device)
+
+device_data = device_response.json()
+
+if device_data:
+    device_id = device_data[0]["id"]
+
+    # Prepare payload for Device_Online
+    payload = {
+        "serial_number": serial_number,
+        "mlb_serial_number": mlb_serial_number,
+        "device": device_id,
     }
 
-    # Fetch device ID using serial_number
-    print(f"Fetching device with serial number: {serial_number}")
-    device_response = requests.get(DEVICE_URL, headers=headers, params={"serial_number": serial_number})
 
-    if device_response.status_code == 200:
-        device_data = device_response.json()
-        # print(f"Device response data: {device_data}")
-        if device_data:  # Check if there's any device data in the response
-            device_id = device_data[0]["id"]  # Get the ID of the first matching device
-            # print(f"Device ID obtained: {device_id}")
+    # Post to Device_Online
+    def post_device_online():
+        return requests.post(DEVICE_ONLINE_URL, headers=headers, data=json.dumps(payload))
 
-            # Prepare payload for Device_Online
-            payload = {
-                "serial_number": serial_number,
-                "mlb_serial_number": mlb_serial_number,
-                "device": device_id,  # Use the primary key (ID)
-            }
-            # print(f"Sending Payload: {payload}")
 
-            # Post to Device_Online
-            online_response = requests.post(DEVICE_ONLINE_URL, headers=headers, data=json.dumps(payload))
-
-            if online_response.status_code == 201:
-                print("Device online data posted successfully!")
-            else:
-                print(f"Error posting device-online data: {online_response.status_code} {online_response.reason}")
-                print(f"Response content: {online_response.text}")
-        else:
-            print(f"No device found for serial number: {serial_number}")
-    else:
-        print(f"Failed to retrieve device ID. Status code: {device_response.status_code}")
-        print(f"Response content: {device_response.text}")
+    online_response = retry_request(post_device_online)
+    print("Device online data posted successfully!")
 else:
-    print("Failed to obtain token.")
-    print(f"Response content: {response.text}")
+    print(f"No device found for serial number: {serial_number}")
