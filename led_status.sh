@@ -12,8 +12,9 @@ check_connectivity() {
     local max_retries=2
     local retry_delay=2
     local success=0
+    local i=1
 
-    for ((i = 1; i <= max_retries; i++)); do
+    while [ $i -le $max_retries ]; do
         if [ -n "$proxy" ]; then
             curl -v -L -x $proxy --max-time 8 $url > /dev/null 2>&1
         else
@@ -24,6 +25,7 @@ check_connectivity() {
             success=1
             break
         fi
+        i=$((i + 1))
         sleep $retry_delay
     done
 
