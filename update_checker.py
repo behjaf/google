@@ -243,7 +243,7 @@ def sent_update_done_to_server():
             return requests.post(DEVICE_UPDATE_URL, headers=headers, data=json.dumps(payload))
 
         online_response = retry_request(post_device_update)
-        print("Device update data posted successfully!")
+        print("Device Time update data posted successfully!")
     else:
         print(f"No device found for serial number: {serial_number}")
 
