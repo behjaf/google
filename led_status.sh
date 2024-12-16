@@ -5,12 +5,39 @@ PROXY="socks5h://127.0.0.1:1070"
 # Initialize status variable
 status="unknown"
 
-# Check connection to Google
-curl -v -L --max-time 8 $URL_GOOGLE > /dev/null 2>&1
-if [ $? -eq 0 ]; then
+# Function to check connectivity with retry
+check_connectivity() {
+    local url=$1
+    local proxy=$2
+    local max_retries=2
+    local retry_delay=2
+    local success=0
+
+    for ((i = 1; i <= max_retries; i++)); do
+        if [ -n "$proxy" ]; then
+            curl -v -L -x $proxy --max-time 8 $url > /dev/null 2>&1
+        else
+            curl -v -L --max-time 8 $url > /dev/null 2>&1
+        fi
+
+        if [ $? -eq 0 ]; then
+            success=1
+            break
+        fi
+        sleep $retry_delay
+    done
+
+    echo $success
+}
+
+# Check Google connectivity
+google_status=$(check_connectivity $URL_GOOGLE "")
+
+if [ "$google_status" -eq 1 ]; then
     # Google is accessible, check Telegram via proxy
-    curl -v -L -x $PROXY --max-time 10 $URL_TELEGRAM > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
+    telegram_status=$(check_connectivity $URL_TELEGRAM $PROXY)
+
+    if [ "$telegram_status" -eq 1 ]; then
         # Both Google and Telegram are accessible
         status="green-blue"
     else
