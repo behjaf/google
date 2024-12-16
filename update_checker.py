@@ -213,7 +213,7 @@ def sent_update_done_to_server():
     response = retry_request(get_token)
 
     token = response.json()["access"]
-    print("Token obtained successfully!")
+    # print("Token obtained successfully!")
 
     headers = {
         "Authorization": f"Bearer {token}",
