@@ -117,15 +117,19 @@ def sent_update_done_to_server():
     # Retry logic
 
     def retry_request(func, max_retries=3, delay=10):
-        for attempt in range(max_retries):
-            response = func()
-            if response.status_code == 200 or response.status_code == 201:
-                return response
-            else:
-                print(f"Retry {attempt + 1}/{max_retries} failed. Retrying in {delay} seconds...")
-                time.sleep(delay)
+        """Retry a request with exponential backoff."""
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = func()
+                if response.ok:  # Covers 2xx responses
+                    return response
+                else:
+                    print(f"Attempt {attempt}/{max_retries}: Failed with status {response.status_code}")
+            except requests.RequestException as e:
+                print(f"Attempt {attempt}/{max_retries}: Exception {e}")
+            time.sleep(delay * (2 ** (attempt - 1)))  # Exponential backoff
         print("Max retries reached. Exiting.")
-        exit()
+        exit(1)
 
     # Function to read the server base URL from the file
     def get_base_url():
