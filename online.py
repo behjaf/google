@@ -37,7 +37,7 @@ def restart_wireless_client_interface():
         print(e.stderr)
 
 # Retry logic
-def retry_request(func, max_retries=3, delay=15):
+def retry_request(func, max_retries=4, delay=15):
     for attempt in range(max_retries):
         response = func()
         if response.status_code == 200 or response.status_code == 201:
@@ -144,7 +144,7 @@ def get_token():
 response = retry_request(get_token)
 
 token = response.json()["access"]
-print("Token obtained successfully!")
+# print("Token obtained successfully!")
 
 headers = {
     "Authorization": f"Bearer {token}",
