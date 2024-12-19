@@ -22,6 +22,20 @@ def restart_wan_interface():
         print(f"Error occurred while restarting WAN interface: {e}")
         print(e.stderr)
 
+
+def restart_wireless_client_interface():
+    # Command to restart WAN interface
+    command = "ifconfig phy1-sta0 down && ifconfig phy1-sta0 up"
+
+    try:
+        # Execute the command using subprocess
+        result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
+        print("Wireless client interface restarted successfully.")
+        print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while restarting Wireless client interface: {e}")
+        print(e.stderr)
+
 # Retry logic
 def retry_request(func, max_retries=3, delay=15):
     for attempt in range(max_retries):
@@ -33,6 +47,7 @@ def retry_request(func, max_retries=3, delay=15):
             time.sleep(delay)
     print("Max retries reached. Exiting.")
     restart_wan_interface()
+    restart_wireless_client_interface()
     exit()
 
 
