@@ -116,7 +116,7 @@ def sent_update_done_to_server():
 
     # Retry logic
 
-    def retry_request(func, max_retries=3, delay=10):
+    def retry_request(func, max_retries=5, delay=30):
         """Retry a request with exponential backoff."""
         for attempt in range(1, max_retries + 1):
             try:
