@@ -9,8 +9,20 @@ import time
 SERVER_LOCATION_FILE = "/root/server_location.txt"
 
 
-# Retry logic
+def restart_wan_interface():
+    # Command to restart WAN interface
+    command = "ifdown wan && ifup wan"
 
+    try:
+        # Execute the command using subprocess
+        result = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
+        print("WAN interface restarted successfully.")
+        print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while restarting WAN interface: {e}")
+        print(e.stderr)
+
+# Retry logic
 def retry_request(func, max_retries=3, delay=15):
     for attempt in range(max_retries):
         response = func()
@@ -20,6 +32,7 @@ def retry_request(func, max_retries=3, delay=15):
             print(f"Retry {attempt + 1}/{max_retries} failed. Retrying in {delay} seconds...")
             time.sleep(delay)
     print("Max retries reached. Exiting.")
+    restart_wan_interface()
     exit()
 
 
