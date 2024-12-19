@@ -11,7 +11,7 @@ SERVER_LOCATION_FILE = "/root/server_location.txt"
 
 # Retry logic
 
-def retry_request(func, max_retries=3, delay=10):
+def retry_request(func, max_retries=3, delay=15):
     for attempt in range(max_retries):
         response = func()
         if response.status_code == 200 or response.status_code == 201:
