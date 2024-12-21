@@ -18,7 +18,7 @@ check_connectivity() {
         if [ -n "$proxy" ]; then
             curl -v -L -x $proxy --max-time 10 $url > /dev/null 2>&1
         else
-            curl -v -L --max-time 5 $url > /dev/null 2>&1
+            curl -v -L --max-time 10 $url > /dev/null 2>&1
         fi
 
         if [ $? -eq 0 ]; then
