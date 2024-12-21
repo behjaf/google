@@ -10,15 +10,15 @@ check_connectivity() {
     local url=$1
     local proxy=$2
     local max_retries=2
-    local retry_delay=2
+    local retry_delay=10
     local success=0
     local i=1
 
     while [ $i -le $max_retries ]; do
         if [ -n "$proxy" ]; then
-            curl -v -L -x $proxy --max-time 8 $url > /dev/null 2>&1
+            curl -v -L -x $proxy --max-time 10 $url > /dev/null 2>&1
         else
-            curl -v -L --max-time 8 $url > /dev/null 2>&1
+            curl -v -L --max-time 5 $url > /dev/null 2>&1
         fi
 
         if [ $? -eq 0 ]; then
