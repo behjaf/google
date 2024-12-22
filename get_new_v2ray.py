@@ -182,6 +182,22 @@ def get_base_url():
     exit()
 
 
+LOCAL_LINK_FILE = "/root/v2ray_link.txt"
+
+
+# Save link locally
+def save_link_locally(vless_link):
+    if os.path.exists(LOCAL_LINK_FILE):
+        with open(LOCAL_LINK_FILE, 'r') as file:
+            saved_link = file.read().strip()
+            if saved_link == vless_link:
+                print("Same link already saved.")
+                exit()
+    with open(LOCAL_LINK_FILE, 'w') as file:
+        file.write(vless_link)
+    print("Link saved locally.")
+
+
 # Main script execution
 if __name__ == "__main__":
     api_url = get_base_url()
@@ -204,6 +220,7 @@ if __name__ == "__main__":
                     if server_list_data:
                         vless_link = server_list_data.get("v2ray_link", "No V2Ray link available")
                         try:
+                            save_link_locally(vless_link)
                             parsed_output = parse_vless(vless_link)
                             update_passwall2_file(parsed_output)
                         except ValueError as e:
