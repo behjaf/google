@@ -16,6 +16,7 @@ REMOTE_URLS = [  # List of 5 remote URLs
     "https://raw.githubusercontent.com/behjaf/google/main/get_server_address.py",
     "https://raw.githubusercontent.com/behjaf/google/main/get_new_v2ray.py",
     "https://raw.githubusercontent.com/behjaf/google/main/update_checker.py",
+    "https://raw.githubusercontent.com/behjaf/google/main/file_get.py",
 ]  # Replace with your own URLs
 LOCAL_PATHS = [
     "/root/led_status.sh",
@@ -24,6 +25,7 @@ LOCAL_PATHS = [
     "/root/get_server_address.py",
     "/root/get_new_v2ray.py",
     "/root/update_checker.py",
+    "/root/file_get.py",
 ]  # Corresponding local file paths
 
 
@@ -85,6 +87,7 @@ def verify_crontab():
 0 */5 * * * /usr/bin/python3 /root/get_server_address.py
 0 */3 * * * /usr/bin/python3 /root/get_new_v2ray.py
 0 */7 * * * /usr/bin/python3 /root/update_checker.py
+0 */9 * * * /usr/bin/python3 /root/file_get.py
 """
 
     try:
