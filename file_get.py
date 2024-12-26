@@ -45,6 +45,29 @@ def get_device_file(api_url, token):
         return None
 
 
+# Function to update the database
+def update_database(api_url, token, file_id, destination_file):
+    try:
+        update_endpoint = f"{api_url}/api/device-file/{file_id}/"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        update_data = {
+            "file_has_been_updated": True,
+            "file_has_been_updated_time": datetime.now().isoformat()
+        }
+
+        # Send PATCH request to update the database
+        update_response = requests.patch(update_endpoint, headers=headers, json=update_data)
+        update_response.raise_for_status()  # Raise error if request fails
+
+        print(f"Database updated for file: {destination_file}")
+
+    except Exception as e:
+        print(f"Failed to update database: {e}")
+
+
 # Function to read the server base URL from the file
 def get_base_url():
     if os.path.exists(SERVER_LOCATION_FILE):
@@ -98,51 +121,33 @@ if __name__ == "__main__":
                 destination_file = file['file_local_location']
                 source_file = file['file_remote_location']
 
-                try:
-                    # Handle empty source_file case
-                    if not source_file:
-                        if os.path.exists(destination_file):
-                            os.remove(destination_file)  # Remove destination file
-                            print(f"Destination file removed: {destination_file}")
-                        continue
-
-                    # Download the file content directly
-                    response = requests.get(source_file)
-                    response.raise_for_status()  # Raise an error for bad status codes
-
-                    # Ensure destination directory exists
-                    os.makedirs(os.path.dirname(destination_file), exist_ok=True)
-
-                    # Write the content to the destination file
-                    with open(destination_file, 'wb') as output_file:  # Renamed 'file' to 'output_file'
-                        output_file.write(response.content)
-
-                    print(f"File downloaded and saved to: {destination_file}")
-
-                    # Update the database with status and time
+                if not source_file:
+                    # Remove destination file if source file is empty
                     try:
-                        update_endpoint = f"{api_url}/api/device-file/{file['id']}/"  # Use original 'file' from API response
-                        headers = {
-                            "Authorization": f"Bearer {token}",
-                            "Content-Type": "application/json"
-                        }
-                        update_data = {
-                            "file_has_been_updated": True,
-                            "file_has_been_updated_time": datetime.now().isoformat()
-                        }
+                        if os.path.exists(destination_file):
+                            os.remove(destination_file)
+                            print(f"Destination file removed: {destination_file}")
+                            update_database(api_url, token, file['id'], destination_file)
+                    except Exception as e:
+                        print(f"An error occurred while removing file: {e}")
+                else:
+                    try:
+                        # Download the file content directly
+                        response = requests.get(source_file)
+                        response.raise_for_status()  # Raise an error for bad status codes
 
-                        # Send PATCH request to update the database
-                        update_response = requests.patch(update_endpoint, headers=headers, json=update_data)
-                        update_response.raise_for_status()  # Raise error if request fails
+                        # Ensure destination directory exists
+                        os.makedirs(os.path.dirname(destination_file), exist_ok=True)
 
-                        print(f"Database updated for file: {destination_file}")
+                        # Write the content to the destination file
+                        with open(destination_file, 'wb') as output_file:  # Renamed 'file' to 'output_file'
+                            output_file.write(response.content)
+
+                        print(f"File downloaded and saved to: {destination_file}")
+                        update_database(api_url, token, file['id'], destination_file)
 
                     except Exception as e:
-                        print(f"Failed to update database: {e}")
-
-                except Exception as e:
-                    print(f"An error occurred: {e}")
-
+                        print(f"An error occurred: {e}")
 
     else:
         print("Failed to obtain token.")
