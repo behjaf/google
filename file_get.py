@@ -98,6 +98,8 @@ if __name__ == "__main__":
                 destination_file = file['file_local_location']
                 source_file = file['file_remote_location']
 
+                print(destination_file)
+
                 try:
                     # Download the file content directly
                     response = requests.get(source_file)
