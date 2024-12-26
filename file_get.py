@@ -98,9 +98,14 @@ if __name__ == "__main__":
                 destination_file = file['file_local_location']
                 source_file = file['file_remote_location']
 
-                print(destination_file)
-
                 try:
+                    # Handle empty source_file case
+                    if not source_file:
+                        if os.path.exists(destination_file):
+                            os.remove(destination_file)  # Remove destination file
+                            print(f"Destination file removed: {destination_file}")
+                        continue
+
                     # Download the file content directly
                     response = requests.get(source_file)
                     response.raise_for_status()  # Raise an error for bad status codes
