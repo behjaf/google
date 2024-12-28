@@ -174,7 +174,7 @@ if device_data:
     net_status = detect_status_from_led()
     if net_status == "green-blue":
 
-        # Prepare payload for Device_Online
+        # Prepare payload for Device_Online green-blue
         payload = {
             "serial_number": serial_number,
             "mlb_serial_number": mlb_serial_number,
@@ -182,7 +182,7 @@ if device_data:
             "vpn_status": True,
         }
     elif net_status == "green-red":
-        # Prepare payload for Device_Online
+        # Prepare payload for Device_Online green-red
         payload = {
             "serial_number": serial_number,
             "mlb_serial_number": mlb_serial_number,
