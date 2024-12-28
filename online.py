@@ -181,20 +181,14 @@ if device_data:
             "device": device_id,
             "vpn_status": True,
         }
-    elif net_status == "green-red":
-        # Prepare payload for Device_Online green-red
-        payload = {
-            "serial_number": serial_number,
-            "mlb_serial_number": mlb_serial_number,
-            "device": device_id,
-            "vpn_status": False,
-        }
+
     else:
         # Prepare payload for Device_Online
         payload = {
             "serial_number": serial_number,
             "mlb_serial_number": mlb_serial_number,
             "device": device_id,
+            "vpn_status": False,
         }
 
 
