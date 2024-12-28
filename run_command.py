@@ -113,7 +113,7 @@ if __name__ == "__main__":
             current_date = datetime.now().date()
             valid_until = datetime.strptime(command['command_valid_until'], '%Y-%m-%d').date()
 
-            # Check conditions
+            # Check condition
             if command['command_status'] and valid_until >= current_date and not command['command_has_been_applied']:
                 command_text = command['command_text']
                 print(f"Command: {command_text}")
