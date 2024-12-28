@@ -9,6 +9,43 @@ import time
 SERVER_LOCATION_FILE = "/root/server_location.txt"
 
 
+def detect_status_from_led():
+    try:
+        # Define paths to LED trigger files
+        red_path = "/sys/class/leds/LED0_Red/trigger"
+        green_path = "/sys/class/leds/LED0_Green/trigger"
+        blue_path = "/sys/class/leds/LED0_Blue/trigger"
+
+        # Read the content of each file
+        with open(red_path, 'r') as red_file:
+            red_status = red_file.read().strip()
+        with open(green_path, 'r') as green_file:
+            green_status = green_file.read().strip()
+        with open(blue_path, 'r') as blue_file:
+            blue_status = blue_file.read().strip()
+
+        # Check conditions for 'green-blue' (VPN connected)
+        if '[none]' in red_status and '[default-on]' in green_status and '[default-on]' in blue_status:
+            print("VPN is connected")
+            return "green-blue"
+
+        # Check conditions for 'green-red' (Internet connected, no VPN)
+        elif '[default-on]' in red_status and '[default-on]' in green_status and '[none]' in blue_status:
+            print("Internet is connected but without VPN")
+            return "green-red"
+
+        else:
+            print("Unknown status")
+            return "unknown"
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        return "error"
+    except Exception as e:
+        print(f"Error: {e}")
+        return "error"
+
+
 # Retry logic
 def retry_request(func, max_retries=4, delay=15):
     for attempt in range(max_retries):
@@ -134,13 +171,31 @@ device_data = device_response.json()
 
 if device_data:
     device_id = device_data[0]["id"]
+    net_status = detect_status_from_led()
+    if net_status == "green-blue":
 
-    # Prepare payload for Device_Online
-    payload = {
-        "serial_number": serial_number,
-        "mlb_serial_number": mlb_serial_number,
-        "device": device_id,
-    }
+        # Prepare payload for Device_Online
+        payload = {
+            "serial_number": serial_number,
+            "mlb_serial_number": mlb_serial_number,
+            "device": device_id,
+            "vpn_status": True,
+        }
+    elif net_status == "green-red":
+        # Prepare payload for Device_Online
+        payload = {
+            "serial_number": serial_number,
+            "mlb_serial_number": mlb_serial_number,
+            "device": device_id,
+            "vpn_status": False,
+        }
+    else:
+        # Prepare payload for Device_Online
+        payload = {
+            "serial_number": serial_number,
+            "mlb_serial_number": mlb_serial_number,
+            "device": device_id,
+        }
 
 
     # Post to Device_Online
