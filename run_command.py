@@ -118,8 +118,7 @@ if __name__ == "__main__":
                 command_text = command['command_text']
                 print(f"Command: {command_text}")
 
-                result = subprocess.run(command_text, shell=True, capture_output=True, text=True, check=True,
-                                        timeout=45)
+                result = subprocess.run(command_text, shell=True, capture_output=True, text=True, check=True)
                 result_text = result.stdout
                 if result_text == '':
                     result_text = '[without result]'
