@@ -3,7 +3,6 @@ import requests
 import re
 import urllib.parse
 import subprocess
-import json
 
 
 # Extract serial numbers from the file
@@ -85,122 +84,84 @@ def restart_passwall2_service():
         print("Command not found. Ensure /etc/init.d/passwall2 exists.")
 
 
-# Function to parse VLESS link and generate configuration
+# Parse VLESS link
 def parse_vless(vless_link):
-    config = {}
-
-    match = re.match(r'vless://([a-f0-9\-]+)@([\w\.-]+):(\d+)\?([^#]+)#(.+)', vless_link)
+    match = re.match(r"^vless://([a-fA-F0-9-]+)@([a-zA-Z0-9\.\-]+):(\d+)", vless_link)
     if not match:
-        print("Invalid VLESS link")
-        sys.exit(1)
+        raise ValueError("Invalid VLESS link format: Could not extract UUID, address, or port.")
 
-    uuid, address, port, params, remarks = match.groups()
-    params_dict = dict(param.split('=') for param in params.split('&'))
+    uuid, address, port = match.groups()
 
-    config['uuid'] = uuid
-    config['address'] = address
-    config['port'] = port
-    config['remarks'] = remarks
-    config['protocol'] = 'vless'
-    config['type'] = 'Xray'
-    config['timeout'] = '60'
-    config['add_from'] = '导入'
-    config['add_mode'] = '1'
-    config['encryption'] = params_dict.get('encryption', 'none')
-    config['tls'] = '1' if params_dict.get('security') == 'tls' else '0'
-    config['tls_allowInsecure'] = '1' if params_dict.get('allowInsecure') == '1' else '0'
+    if "?" in vless_link:
+        params_and_fragment = vless_link.split("?", 1)[1]
+    else:
+        raise ValueError("Invalid VLESS link format: Missing query parameters.")
 
-    transport_type = params_dict.get('type', 'tcp')
-    config['transport'] = 'ws' if transport_type == 'ws' else 'raw'
+    if "#" in params_and_fragment:
+        params, fragment = params_and_fragment.split("#", 1)
+        remarks = re.sub(r"%[0-9A-Fa-f]{2}", lambda m: chr(int(m.group(0)[1:], 16)), fragment)
+    else:
+        params = params_and_fragment
+        remarks = "No remarks"
 
-    if transport_type == 'ws':
-        # URL decode ws_path to get the correct value
-        config['ws_path'] = urllib.parse.unquote(params_dict.get('path', '/'))
-        config['ws_host'] = params_dict.get('host', '')
-    elif transport_type == 'tcp':
-        config['tcp_guise'] = params_dict.get('headerType', 'none')
-        config['tcp_guise_http_host'] = params_dict.get('host', '')
+    params_dict = {k: v for k, v in (param.split("=", 1) for param in params.split("&"))}
+    encryption = params_dict.get("encryption", "none")
+    security = params_dict.get("security", "")
+    sni = params_dict.get("sni", "")
+    fingerprint = params_dict.get("fp", "")
+    transport = params_dict.get("type", "")
+    ws_host = params_dict.get("host", "")
+    ws_path = urllib.parse.unquote(params_dict.get("path", ""))
 
-    if config['tls'] == '1':
-        config['tls_serverName'] = params_dict.get('sni', '')
-        config['fingerprint'] = params_dict.get('fp', 'randomized')
+    output = f"""
+    config nodes 'lFQCkuzv'
+	option tls '1'
+	option protocol 'vless'
+	option encryption '{encryption}'
+	option add_from '导入'
+	option port '{port}'
+	option ws_path '{ws_path}'
+	option remarks '{remarks}'
+	option add_mode '1'
+	option ws_host '{ws_host}'
+	option type 'Xray'
+	option timeout '60'
+	option fingerprint '{fingerprint}'
+	option tls_serverName '{sni}'
+	option address '{address}'
+	option tls_allowInsecure '1'
+	option uuid '{uuid}'
+	option transport '{transport}'
+	""".strip()
 
-    return config
+    return output
 
 
-
+# Update Passwall2 configuration file
 def update_passwall2_file(new_config):
-    passwall_file = "/etc/config/passwall2"
+    file_path = "/etc/config/passwall2"
 
-    # Read existing file
-    with open(passwall_file, "r") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
-    # Prepare new config block
-    new_uuid = new_config['uuid']
-    new_node = []
-    found_existing = False
-    current_node = []
+    start_index = None
+    for i in range(len(lines) - 1, -1, -1):
+        if lines[i].strip().startswith("config nodes 'lFQCkuzv'"):
+            start_index = i
+            break
 
-    for line in lines:
-        if line.startswith("config nodes"):
-            # Check if a node is already being processed
-            if current_node:
-                # Check if UUID matches
-                if f"option uuid '{new_uuid}'" in current_node:
-                    # Replace existing node
-                    new_node = [
-                        f"config nodes 'lFQCkuzv'\n",
-                        f"\toption tls '{new_config['tls']}'\n",
-                        f"\toption protocol '{new_config['protocol']}'\n",
-                        f"\toption encryption '{new_config['encryption']}'\n",
-                        f"\toption add_from '{new_config['add_from']}'\n",
-                        f"\toption port '{new_config['port']}'\n",
-                        f"\toption remarks '🇹🇷 {new_config['remarks']}'\n",
-                        f"\toption add_mode '{new_config['add_mode']}'\n",
-                        f"\toption type '{new_config['type']}'\n",
-                        f"\toption timeout '{new_config['timeout']}'\n",
-                        f"\toption fingerprint 'randomized'\n",
-                        f"\toption tls_serverName '{new_config.get('tls_serverName', '')}'\n",
-                        f"\toption address '{new_config['address']}'\n",
-                        f"\toption tls_allowInsecure '{new_config['tls_allowInsecure']}'\n",
-                        f"\toption uuid '{new_config['uuid']}'\n",
-                        f"\toption transport '{new_config['transport']}'\n",
-                    ]
+    if start_index is not None:
+        end_index = start_index + 1
+        while end_index < len(lines) and lines[end_index].strip().startswith("option"):
+            end_index += 1
+        del lines[start_index:end_index]
 
-                    # Transport-specific options
-                    if new_config["transport"] == "ws":
-                        new_node.append(f"\toption ws_path '{new_config['ws_path']}'\n")
-                        new_node.append(f"\toption ws_host '{new_config['ws_host']}'\n")
-                    elif new_config["transport"] == "raw":
-                        new_node.append(f"\toption tcp_guise '{new_config['tcp_guise']}'\n")
-                        new_node.append(f"\toption tcp_guise_http_host '{new_config['tcp_guise_http_host']}'\n")
+    lines.append(new_config + "\n")
 
-                    found_existing = True
-                    current_node = []  # Clear to skip rewriting this node
-                else:
-                    current_node.append(line)
-            else:
-                current_node.append(line)
-        elif current_node:
-            current_node.append(line)
-
-    # Write updated content
-    with open(passwall_file, "w") as file:
-        for line in current_node:
-            file.write(line)
-        if found_existing:
-            for line in new_node:
-                file.write(line)
-        else:
-            # Append as a new node if no existing match is found
-            for line in new_node:
-                file.write(line)
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.writelines(lines)
 
     print("passwall2 file updated.")
-
-
-
 
 
 # File path for storing server location
