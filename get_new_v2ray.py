@@ -113,26 +113,35 @@ def parse_vless(vless_link):
     ws_host = params_dict.get("host", "")
     ws_path = urllib.parse.unquote(params_dict.get("path", ""))
 
+    # Determine transport type (set raw or ws based on "type")
+    if transport == "ws":
+        transport = "ws"
+    else:
+        transport = "raw"
+
+    # Prepare the output in the required format
     output = f"""
-    config nodes 'lFQCkuzv'
-	option tls '1'
-	option protocol 'vless'
-	option encryption '{encryption}'
-	option add_from '导入'
-	option port '{port}'
-	option ws_path '{ws_path}'
-	option remarks '{remarks}'
-	option add_mode '1'
-	option ws_host '{ws_host}'
-	option type 'Xray'
-	option timeout '60'
-	option fingerprint '{fingerprint}'
-	option tls_serverName '{sni}'
-	option address '{address}'
-	option tls_allowInsecure '1'
-	option uuid '{uuid}'
-	option transport '{transport}'
-	""".strip()
+config nodes 'lFQCkuzv'
+    option tls '{1 if security == 'tls' else 0}'
+    option protocol 'vless'
+    option encryption '{encryption}'
+    option add_from '导入'
+    option port '{port}'
+    option ws_path '{ws_path}'
+    option remarks '{remarks}'
+    option add_mode '1'
+    option ws_host '{ws_host}'
+    option type 'Xray'
+    option timeout '60'
+    option fingerprint '{fingerprint}'
+    option tls_serverName '{sni}'
+    option address '{address}'
+    option tls_allowInsecure '1'  # Assuming '1' by default for tls_allowInsecure
+    option uuid '{uuid}'
+    option transport '{transport}'
+    option tcp_guise 'http'
+    option tcp_guise_http_host '{ws_host}'
+""".strip()
 
     return output
 
