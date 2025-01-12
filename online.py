@@ -55,7 +55,7 @@ def retry_request(func, max_retries=4, delay=15):
         else:
             print(f"Retry {attempt + 1}/{max_retries} failed. Retrying in {delay} seconds...")
             time.sleep(delay)
-    print("Max retries reached. restarting Wireless client interface and WAN interface.")
+
     exit()
 
 
