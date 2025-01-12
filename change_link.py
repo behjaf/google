@@ -18,16 +18,13 @@ def detect_status_from_led():
 
         # Check conditions for 'green-blue' (VPN connected)
         if '[none]' in red_status and '[default-on]' in green_status and '[default-on]' in blue_status:
-            print("VPN is connected")
             return "green-blue"
 
         # Check conditions for 'green-red' (Internet connected, no VPN)
         elif '[default-on]' in red_status and '[default-on]' in green_status and '[none]' in blue_status:
-            print("Internet is connected but without VPN")
             return "green-red"
 
         else:
-            print("Unknown status")
             return "unknown"
 
     except FileNotFoundError as e:
@@ -39,7 +36,7 @@ def detect_status_from_led():
 
 
 # Retry logic with check for consecutive 'green-red' status
-def retry_request(func, max_retries=4, delay=15, consecutive_threshold=4):
+def retry_request(func, max_retries=3, delay=300, consecutive_threshold=3):
     consecutive_green_red = 0  # Counter for consecutive 'green-red' status
 
     for attempt in range(max_retries):
@@ -56,16 +53,21 @@ def retry_request(func, max_retries=4, delay=15, consecutive_threshold=4):
 
             # Check if threshold is reached
             if consecutive_green_red == consecutive_threshold:
-                print(f"'green-red' status detected {consecutive_threshold} times consecutively. Running a.py...")
-                subprocess.run(["python3", "a.py"])
+                print(f"'green-red' status detected {consecutive_threshold} times consecutively. Running get_new_v2ray.py...")
+                subprocess.run(["python", "get_new_v2ray.py"])
                 consecutive_green_red = 0  # Reset counter after running the script
+                exit()
+
+        elif response == "unknown":
+            print("Status is 'unknown'. Stopping retries.")
+            return "unknown"  # Exit immediately if the status is unknown
 
         else:
-            print(f"Unknown or error status: {response}. Resetting green-red counter.")
+            print(f"Error or unexpected status: {response}. Resetting green-red counter.")
             consecutive_green_red = 0  # Reset counter
 
-        # Wait before retrying
-        if attempt < max_retries - 1:  # No need to sleep after the last attempt
+        # Wait before retrying, unless it's the last attempt
+        if attempt < max_retries - 1:
             print(f"Retry {attempt + 1}/{max_retries} failed. Retrying in {delay} seconds...")
             time.sleep(delay)
 
@@ -74,9 +76,11 @@ def retry_request(func, max_retries=4, delay=15, consecutive_threshold=4):
 
 
 # Execute with retries
-device_response = retry_request(detect_status_from_led, max_retries=10, delay=15)
+device_response = retry_request(detect_status_from_led)
 
 if device_response == "failed":
     print("Failed to detect the LED status.")
+elif device_response == "unknown":
+    print("Stopping retries due to unknown status.")
 else:
     print(f"Detected status: {device_response}")
