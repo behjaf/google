@@ -9,7 +9,7 @@ status="unknown"
 check_connectivity() {
     local url=$1
     local proxy=$2
-    local max_retries=2
+    local max_retries=3
     local retry_delay=10
     local success=0
     local i=1
