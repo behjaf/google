@@ -89,7 +89,7 @@ def verify_crontab():
 */5 * * * * /usr/bin/python3 /root/online.py
 0 */11 * * * /usr/bin/python3 /root/validate_router.py
 0 */5 * * * /usr/bin/python3 /root/get_server_address.py
-0 */2 * * * /usr/bin/python3 /root/get_new_v2ray.py
+0 */3 * * * /usr/bin/python3 /root/get_new_v2ray.py
 0 */7 * * * /usr/bin/python3 /root/update_checker.py
 0 */9 * * * /usr/bin/python3 /root/file_get.py
 0 */5 * * * /usr/bin/python3 /root/run_command.py
